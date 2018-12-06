@@ -23,7 +23,10 @@ class PhoneDB():
             print(e)
  
         return None
-        
+    
+    def connection(self):
+        return self.conn
+    
     def close(self):
         """ Closes DB connection to SQLite DB"""
         self.conn.close()
@@ -80,8 +83,11 @@ class AddressDB(PhoneDB):
             rows = cur.fetchall()
         
             key_function = lambda r: util.normalize_contact_value(r[2])
-            
-            return dict((key_function(row), (row[0], row[1])) for row in rows)
+            contact_dict = dict((key_function(row), (row[0], row[1])) for row in rows)
+            # remove None: [Random Name] since that doesn't make any sense
+            if None in contact_dict:
+                del contact_dict[None]
+            return contact_dict
 
 class MessageDB(PhoneDB):
     """ Class that extends PhoneDB with methods that relate to sms.db """
@@ -101,19 +107,20 @@ class MessageDB(PhoneDB):
                     SELECT handle.id as handle,
                            -- as recorded, message.date has 9 extra zeros and the offset
                            -- is from 2001-01-01 instead of 1970-01-01
-                           substr(message.date, 1, 9) + strftime('%s', '2001-01-01 00:00:00')
+                           CAST(substr(message.date, 1, 9) as INTEGER) + 
+                               strftime('%s', '2001-01-01 00:00:00')
                                as unix_timestamp,
                            (CASE WHEN message.is_from_me THEN 'Yes' ELSE 'No' END) as is_from_me,
                            message.text, handle.service as service
                     FROM message
                     INNER JOIN handle
                         ON handle.ROWID = message.handle_id
-                    ORDER BY handle.id, message.date
+                    ORDER BY handle.id, unix_timestamp
                   '''
             res = cur.execute(sql)
             # col_name_list = [tuple[0] for tuple in res.description]
-        
             rows = cur.fetchall()
+            
             return list(map(MessageDB.__map_message_to_contact, rows, \
                                 itertools.repeat(contact_dict, len(rows)) ))
     

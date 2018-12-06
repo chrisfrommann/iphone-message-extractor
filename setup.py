@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='iphone_message_extractor',
-      version='0.1.0',
+      version='0.1.1',
       description='Simple CLI to extract messages (SMS/iMessage) to CSV from iPhone backups',
       url='https://github.com/chrisfrommann/iphone-message-extractor',
       author='Chris Frommann',

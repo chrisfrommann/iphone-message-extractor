@@ -36,10 +36,7 @@ class TestUtil(TestCase):
     def test_normalize_phone_invalid_nums(self):
         bad_phones = ['1 (650) 555-1212,626626262#', '34 98 72', '415 555 121', '21']
         for num in bad_phones:
-            self.assertEqual(util.normalize_phone(num), None)
-    
-    def test_convert_timestamp_to_date(self):
-        
+            self.assertEqual(util.normalize_phone(num), None)  
     
 if __name__ == '__main__':
     unittest.main()
